@@ -4,13 +4,13 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
-//import java.util.Collections
 import org.apache.commons.digester3.Digester
-import org.apache.log4j.Logger
 import org.xml.sax.SAXException
 
 import static java.lang.String.format
 import static org.eclipse.xtend.java2xtend.config.formatting.Profiles.*
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 class XtendFormatterPreferencesReader {
 
@@ -25,7 +25,7 @@ class XtendFormatterPreferencesReader {
     static val String UNABLE_TO_READ_XTEND_FORMATTER_PREFERENCES_FILE = "Unable to read Xtend formatter preferences file. " +
         DEFAULT_PREFERENCES_USED
 
-    static val extension Logger LOGGER = Logger.getLogger(XtendFormatterPreferencesReader)
+    static val extension Logger LOGGER = LoggerFactory.getLogger(XtendFormatterPreferencesReader)
 
     def read(Path path) {
         read(Files.newInputStream(path))

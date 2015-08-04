@@ -8,11 +8,12 @@ import java.nio.file.FileVisitResult
 
 import static java.nio.file.FileVisitResult.*
 import static java.nio.file.Files.*
-import org.apache.log4j.Logger
 import java.io.IOException
 import java.nio.file.FileSystems
 
 import static java.lang.String.format
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 class PathUtils {
     
@@ -25,7 +26,7 @@ class PathUtils {
     
     private new(){}
     
-    static val extension Logger LOGGER = Logger.getLogger(PathUtils)
+    static val extension Logger LOGGER = LoggerFactory.getLogger(PathUtils)
 
     def static isContainedIn(Path child, Path possibleParent) {
         for (var dir = child; dir !== null; dir = dir.parent) {

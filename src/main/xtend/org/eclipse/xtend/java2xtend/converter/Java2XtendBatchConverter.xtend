@@ -18,7 +18,6 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.util.HashMap
 import java.util.List
 import java.util.regex.Pattern
-import org.apache.log4j.Logger
 import org.eclipse.emf.common.util.URI
 import org.eclipse.xtend.core.formatting2.XtendFormatter
 import org.eclipse.xtend.core.formatting2.XtendFormatterPreferenceKeys
@@ -51,6 +50,8 @@ import static org.eclipse.xtend.core.formatting2.XtendFormatterPreferenceKeys.*
 import org.eclipse.xtend.java2xtend.converter.Java2XtendBatchConverter.SkipFormatting
 import static org.eclipse.xtend.java2xtend.util.PathUtils.*
 import java.util.Map
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /*
  * Convert to Xtend all the Java files found under a list of source directories
@@ -74,7 +75,7 @@ class Java2XtendBatchConverter implements Converter, BackupAndConvertConfig {
 
     static val DEFAULT_ENCODING = UTF_8
 
-    protected static val extension Logger LOGGER = Logger.getLogger(Java2XtendBatchConverter)
+    protected static val extension Logger LOGGER = LoggerFactory.getLogger(Java2XtendBatchConverter)
     
     protected enum SkipFormatting {yes, no}
     protected enum SkipValidation {yes, no}
@@ -113,8 +114,6 @@ class Java2XtendBatchConverter implements Converter, BackupAndConvertConfig {
     Path backupDirectoryPath
     @Accessors(PUBLIC_GETTER)
     Charset encoding        
-//    @Accessors(PUBLIC_GETTER)
-//    Path preferencesPath
     @Accessors(PUBLIC_GETTER)
     Map<String, String> preferenceKeys
 
@@ -180,7 +179,6 @@ class Java2XtendBatchConverter implements Converter, BackupAndConvertConfig {
         } else {
             forName(fileEncoding)
         }
-//        preferencesPath = if (preferences === null) null else Paths.get(preferences).toAbsolutePath
         preferenceKeys = if (preferences === null) null 
         else {
             val preferencesPath = Paths.get(preferences).toAbsolutePath
@@ -443,20 +441,6 @@ package class BackupAndConvert {
                 exceptionHandler = ExceptionAcceptor.LOGGING
         }
 
-//        private def getProfileSettings() {
-//            val keymap = if (preferencesPath === null) {
-//                defaultProfileSettings
-//            } else {
-//                readPreferencesFile
-//            }
-//            val result = new MapBasedPreferenceValues(keymap)
-//            result
-//        } 
-
-//        private def getProfileSettings() {
-//            new MapBasedPreferenceValues(preferenceKeys?: defaultProfileSettings)
-//        } 
-        
         private def getDefaultProfileSettings() {
             val keys = PreferenceKeysProvider.allConstantKeys(XtendFormatterPreferenceKeys)
             new HashMap<String, String> => [
@@ -467,14 +451,6 @@ package class BackupAndConvert {
             ]
         }
         
-//        private def readPreferencesFile() {
-//            val preferences = new XtendFormatterPreferencesReader().read(preferencesPath)
-//            if (preferences === null) {
-//                return defaultProfileSettings
-//            }
-//            preferences
-//        }
-
         private def void saveGeneratedCode(String xtendcode, Path dest) {
             val buffer = CharBuffer.wrap(xtendcode)
             val result = encoding.newEncoder.encode(buffer).array
@@ -551,8 +527,6 @@ package interface BackupAndConvertConfig {
     def Path getBackupDirectoryPath()
     
     def Charset getEncoding()
-    
-//    def Path getPreferencesPath()
     
     def Map<String, String> getPreferenceKeys()
     

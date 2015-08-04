@@ -2,7 +2,6 @@ package org.eclipse.xtend.core.tests.javaconverter
 
 import com.google.inject.Inject
 import com.google.inject.Provider
-import org.apache.log4j.Logger
 import org.eclipse.xtend.core.formatting2.XtendFormatter
 import org.eclipse.xtext.formatting2.FormatterRequest
 import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder
@@ -17,10 +16,12 @@ import org.eclipse.xtext.preferences.MapBasedPreferenceValues
 
 import static org.eclipse.xtend.core.formatting2.XtendFormatterPreferenceKeys.*
 import org.eclipse.xtext.resource.XtextResource
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 class AbstractFormattedJava2XtendTestCase extends AbstractJava2XtendTestCase {
  
-    static val extension Logger LOGGER = Logger.getLogger(JavaConverterSeries4Test)
+    static val extension Logger LOGGER = LoggerFactory.getLogger(JavaConverterSeries4Test)
 
     @Inject
     Provider<XtendFormatter> formatterProvider

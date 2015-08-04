@@ -14,6 +14,22 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.classic.spi.ILoggingEvent
 
+/**
+ * Use to configure Logback without any xml file.
+ * 
+ * <configuration>
+ *   <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+ *     <encoder>
+ *       <pattern>%d %p [%c] - &lt;%m&gt;%n</pattern>
+ *     </encoder>
+ *   </appender>
+ *   <logger name="org.eclipse.xtend.java2xtend" level="DEBUG"/>
+ *   <root level="INFO">
+ *     <appender-ref ref="stdout"/>
+ *   </root>
+ * </configuration>
+ *
+ */
 class LogbackConfigurator implements Configurator {
     
     public static val PROPERTIES_FILE_PATH = "logback.properties"
@@ -26,19 +42,6 @@ class LogbackConfigurator implements Configurator {
     static val DEFAULT_PATTERN = "Logback Config with Xtend: %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
     
     extension val Properties properties
-
-//<configuration>
-//  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
-//    <encoder>
-//      <pattern>%d %p [%c] - &lt;%m&gt;%n</pattern>
-//    </encoder>
-//  </appender>
-//  <logger name="org.eclipse.xtend.java2xtend" level="DEBUG"/>
-//  <root level="INFO">
-//    <appender-ref ref="stdout"/>
-//  </root>
-//</configuration>
-        
         
     def private doConfigure(LoggerContext lc) {
         val stdout = new ConsoleAppender<ILoggingEvent> => [
