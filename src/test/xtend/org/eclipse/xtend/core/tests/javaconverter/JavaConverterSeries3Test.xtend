@@ -92,7 +92,7 @@ class JavaConverterSeries3Test extends AbstractXtendTestCase {
     }
 
     @Test 
-    def void testBackupJavaFilesWithNewExtensionAndPutXtendFilesInPlaceCase() {
+    def void testMoveBackupJavaFilesWithNewExtensionAndPutXtendFilesInPlaceCase() {
         val javadir = JAVA_SOURCE_DIR3
         val tmpdir = BASE_TMP_DIR
         val sourcedir = tmpdir + "source"
@@ -134,7 +134,7 @@ class JavaConverterSeries3Test extends AbstractXtendTestCase {
     }
 
     @Test 
-    def void testBackupJavaFilesAndMoveXtendFilesCase() {
+    def void testMoveBackupJavaFilesAndMoveXtendFilesCase() {
         val javadir = JAVA_SOURCE_DIR3
         val tmpdir = BASE_TMP_DIR
         val sourcedir = tmpdir + "source"
@@ -156,7 +156,7 @@ class JavaConverterSeries3Test extends AbstractXtendTestCase {
     }
 
     @Test 
-    def void testBackupJavaFilesWithNewExtensionAndMoveXtendFilesCase() {
+    def void testMoveBackupJavaFilesWithNewExtensionAndMoveXtendFilesCase() {
         val javadir = JAVA_SOURCE_DIR3
         val tmpdir = BASE_TMP_DIR
         val sourcedir = tmpdir + "source"

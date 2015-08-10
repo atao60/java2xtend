@@ -8,14 +8,17 @@ Since its version 2.8, [Xtend](https://eclipse.org/xtend/) under [Eclipse](https
 
 This is where this project comes in.
 
-It used the version 2.9.0.beta3 of *Xtend*.
+It was a good opportunity to learn more about:  
+
+- [OpenShift Online](https://www.openshift.com/products/online): this PAAS platform provides a free plan which is enough to set up an online service. So you can try the *Xtend*'s Java to Xtend converter at [j2x converter](http://j2xconverter-atao60.rhcloud.com/).
+- [Github](https://github.com/) as a [Maven](https://maven.apache.org/) repository: this capability is very useful to use the present project as a base of the above [online project](https://github.com/j2xconverter). 
 
 Licenses & credits
 ------
 
 Licenced under [Eclipse Public License](http://www.eclipse.org/legal/epl-v10.html).
 
-There is a first attempt to do a Java converter from scratch, see [Krzysztof Rzymkowski project](https://github.com/rzymek/java2xtend).
+There is a first attempt to create a Java converter from scratch, see [Krzysztof Rzymkowski's project](https://github.com/rzymek/java2xtend).
 
 Java Patterns
 -------
@@ -80,6 +83,10 @@ after conversion (see note (°) above) will become:
 Requirements
 -----
 
+This project used the version 2.9.0.beta3 of *Xtend*.
+
+It requires:
+
 - JDK 1.8
 - [Maven](https://maven.apache.org/) 3.3.1 or above
 
@@ -103,13 +110,34 @@ Here under *Linux*:
 
 **1.** Get the source
 
-    cd <local git path>
+    cd <local workspace path>
     git clone https://github.com/atao60/java2xtend.git
     
-**2.** Build it and install to *Maven* local repository:
+**2.** Build and install to *Maven* local repository:
 
-    cd <local git path>java2xtend
-    mvn install
+    cd <local workspace path>java2xtend
+    mvn install -Pstandalone
+    
+Two versions of the jar are now available:
+  
+- a "fat" one, i.e. that is executable,
+- a standard one, to be used by other projects as the [online converter](https://github.com/atao60/j2x-on-openshift).
+    
+**3.** Deploy on a public Maven repository
+
+    cd <local git path>
+    git clone git@github.com:atao60/snapshots.git
+    
+    cd <local workspace path>java2xtend
+    mvn deploy -Dsnapshots.staging.repo=<local git path>/snapshots
+    
+    cd <local git path>/snapshots
+    git status
+    git add .
+    git commit -m "New update"
+    git push 
+         
+Then the standard jar file is available from this [Github repository](https://github.com/atao60/snapshots/raw/master/) working as a *Maven* repository.         
 
 ### Under *Eclipse*
 
@@ -119,6 +147,10 @@ with the same address as above, i.e. `https://github.com/atao60/java2xtend.git`.
     
 Usage
 -------   
+
+#### Online
+
+Go [here](http://j2xconverter-atao60.rhcloud.com/).
 
 #### Command line
 
@@ -130,15 +162,25 @@ the file extension *backup*.
 
 #### Programmaticaly
 
-**1.** Add a dependency to your pom.xml:
+**1.** Add a dependency in the pom.xml:
 
     <dependency>
         <groupId>org.eclipse.xtend</groupId>
         <artifactId>java2xtend</artifactId>
         <version>2.0-SNAPSHOT</version>
     </dependency>
+ 
+**2.** Add a repository in the pom.xml:
+
+    <repositories>
+        <repository>
+            <id>github-atao60</id>
+            <name>atao60's Github based repo</name>
+            <url>https://github.com/atao60/snapshots/raw/master/</url>
+        </repository>
+    </repositories> 
     
-**2.** Use it in your code:
+**3.** Use the converter in your code, here with *Xtend*:
 
     val injector = new XtendStandaloneSetup().createInjectorAndDoEMFRegistration
     extension val j2x = injector.getInstance(Java2XtendBatchConverter)
@@ -147,10 +189,12 @@ the file extension *backup*.
     backupFileExtension = "backup"
     runConverter
 
-As above, the new Xtend files will be in the same directories as the original Java files. These Java files will be rename with
-the file extension *backup*.
+With it, the new *Xtend* files will be in the same directories as the original Java files. In the meantime, these Java files will have been renamed with the file extension `backup`.
 
-Note. To convert Java code available as a string, call directly [JavaConverter](https://github.com/eclipse/xtext/blob/master/plugins/org.eclipse.xtend.core/src/org/eclipse/xtend/core/javaconverter/JavaConverter.xtend) and [XtendFormatter](https://github.com/eclipse/xtext/blob/master/plugins/org.eclipse.xtend.core/src/org/eclipse/xtend/core/formatting2/XtendFormatter.xtend)
+Note. To convert Java code available as a string, call directly
+[JavaConverter](https://github.com/eclipse/xtext/blob/2.9.0.beta3/plugins/org.eclipse.xtend.core/src/org/eclipse/xtend/core/javaconverter/JavaConverter.xtend) 
+and 
+[XtendFormatter](https://github.com/eclipse/xtext/blob/2.9.0.beta3/plugins/org.eclipse.xtend.core/src/org/eclipse/xtend/core/formatting2/XtendFormatter.xtend)
 
 
 

@@ -17,6 +17,7 @@ import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.HashMap
 import java.util.List
+import java.util.Map
 import java.util.regex.Pattern
 import org.eclipse.emf.common.util.URI
 import org.eclipse.xtend.core.formatting2.XtendFormatter
@@ -24,7 +25,8 @@ import org.eclipse.xtend.core.formatting2.XtendFormatterPreferenceKeys
 import org.eclipse.xtend.core.javaconverter.JavaConverter
 import org.eclipse.xtend.core.xtend.XtendFile
 import org.eclipse.xtend.java2xtend.config.formatting.XtendFormatterPreferencesReader
-import org.eclipse.xtend.java2xtend.converter.Java2XtendBatchConverter.SkipValidation
+import org.eclipse.xtend.java2xtend.converter.ConvertConfig.SkipFormatting
+import org.eclipse.xtend.java2xtend.converter.ConvertConfig.SkipValidation
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.diagnostics.Severity
 import org.eclipse.xtext.formatting2.FormatterRequest
@@ -39,6 +41,8 @@ import org.eclipse.xtext.util.ExceptionAcceptor
 import org.eclipse.xtext.util.StringInputStream
 import org.eclipse.xtext.validation.CheckMode
 import org.eclipse.xtext.validation.Issue
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import static java.lang.String.format
 import static java.nio.charset.Charset.*
@@ -47,18 +51,15 @@ import static java.nio.file.FileVisitResult.*
 import static java.nio.file.Files.*
 import static java.nio.file.StandardCopyOption.*
 import static org.eclipse.xtend.core.formatting2.XtendFormatterPreferenceKeys.*
-import org.eclipse.xtend.java2xtend.converter.Java2XtendBatchConverter.SkipFormatting
+import static org.eclipse.xtend.java2xtend.converter.Convert.*
 import static org.eclipse.xtend.java2xtend.util.PathUtils.*
-import java.util.Map
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
-/*
+/**
  * Convert to Xtend all the Java files found under a list of source directories
  * 
- * 
+ * See Java2XtendBatchRunner for some explanations about the available options.
  */
-class Java2XtendBatchConverter implements Converter, BackupAndConvertConfig {
+class Java2XtendBatchConverter implements BatchConverter, BackupAndConvertConfig {
 
     static val BACKUP_NOT_INSIDE_SOURCE_MSG = "The configured backup path \"%s\" cannot be a child of the configured source directory \"%s\"."
     static val BACKUP_NOT_INSIDE_DESTINATION_MSG = "The configured backup path \"%s\" cannot be a child of the configured destination directory \"%s\"."
@@ -75,12 +76,9 @@ class Java2XtendBatchConverter implements Converter, BackupAndConvertConfig {
 
     static val DEFAULT_ENCODING = UTF_8
 
-    protected static val extension Logger LOGGER = LoggerFactory.getLogger(Java2XtendBatchConverter)
-    
-    protected enum SkipFormatting {yes, no}
-    protected enum SkipValidation {yes, no}
+    static val extension Logger LOGGER = LoggerFactory.getLogger(Java2XtendBatchConverter)
 
-    @Inject 
+    @Inject
     Provider<BackupAndConvert> backupAndConvertProvider
 
     @Accessors(PUBLIC_SETTER)
@@ -99,31 +97,31 @@ class Java2XtendBatchConverter implements Converter, BackupAndConvertConfig {
     String preferences
 
     @Accessors(PUBLIC_GETTER)
-    boolean isXtendGeneratedInPlace 
+    boolean isXtendGeneratedInPlace
     @Accessors(PUBLIC_GETTER)
     boolean isOriginalFilesMoved
     @Accessors(PUBLIC_GETTER)
-    SkipValidation skipValidation = SkipValidation.no 
+    SkipValidation skipValidation = SkipValidation.no
     @Accessors(PUBLIC_GETTER)
-    SkipFormatting skipFormatting = SkipFormatting.no 
+    SkipFormatting skipFormatting = SkipFormatting.no
     @Accessors(PUBLIC_GETTER)
-    String originalFileExtension  
+    String originalFileExtension
     @Accessors(PUBLIC_GETTER)
-    Path outputDirectoryPath     
+    Path outputDirectoryPath
     @Accessors(PUBLIC_GETTER)
     Path backupDirectoryPath
     @Accessors(PUBLIC_GETTER)
-    Charset encoding        
+    Charset encoding
     @Accessors(PUBLIC_GETTER)
     Map<String, String> preferenceKeys
 
     val List<String> sourceDirectories = newArrayList
     List<Path> sourceDirectoryPaths
     boolean isWithJavaFileExtension
-    boolean isWithBackupFileExtension 
+    boolean isWithBackupFileExtension
     BackupAndConvert backupAndConvert
     PathMatcher originalFileMatcher
-    
+
     override runConverter() {
         format("runConverter, outputDirectory: %s", outputDirectory).debug
         setConfigParams
@@ -138,15 +136,15 @@ class Java2XtendBatchConverter implements Converter, BackupAndConvertConfig {
     override void addSourceDirectory(String path) {
         sourceDirectories.add(path)
     }
-    
+
     override setSkipValidation(boolean skip) {
-        skipValidation = if (skip) SkipValidation.yes else SkipValidation.no
+        skipValidation = if(skip) SkipValidation.yes else SkipValidation.no
     }
-    
+
     override setSkipFormatting(boolean skip) {
-        skipFormatting = if (skip) SkipFormatting.yes else SkipFormatting.no
+        skipFormatting = if(skip) SkipFormatting.yes else SkipFormatting.no
     }
-    
+
     private def setConfigParams() {
         isXtendGeneratedInPlace = outputDirectory === null
         isOriginalFilesMoved = backupDirectory !== null
@@ -179,14 +177,14 @@ class Java2XtendBatchConverter implements Converter, BackupAndConvertConfig {
         } else {
             forName(fileEncoding)
         }
-        preferenceKeys = if (preferences === null) null 
+        preferenceKeys = if (preferences === null)
+            null
         else {
             val preferencesPath = Paths.get(preferences).toAbsolutePath
             new XtendFormatterPreferencesReader().read(preferencesPath)
         }
     }
 
-    // TODO: check if exists when preferencesPath is not null
     private def checkConfiguration() {
         if (sourceDirectories.empty) {
             SOURCE_FOLDERS_MUST_BE_PROVIDED_MSG.error
@@ -305,10 +303,11 @@ class Java2XtendBatchConverter implements Converter, BackupAndConvertConfig {
         root.resolve(rel)
     }
 
-}    
+}
 
-package class BackupAndConvert {
+public class Convert implements StringConverter {
 
+    extension static val Logger LOGGER = LoggerFactory.getLogger(Convert)
     static val DUMMY_TMP_DEST_DIR = "target/tmp/"
 
     @Inject
@@ -326,215 +325,325 @@ package class BackupAndConvert {
     XtendFormatter formatter
     XtextResourceSet resourceSet
 
+    String javaCode
+    String generatedXtendCode
+    boolean converted = false
     int tmpFileNameSuffixGenerator = 0
- 
-        extension static val Logger LOGGER = Java2XtendBatchConverter.LOGGER
 
-        extension var BackupAndConvertConfig batchConverter
+    extension ConvertConfig convertConfig
 
-        Path sourceDirPath
+    override configure(ConvertConfig convertConfig) {
+        this.convertConfig = convertConfig
+        this
+    }
 
-        public def configure(BackupAndConvertConfig batchConverter) {
-            this.batchConverter = batchConverter
-            this
+    override javaCode(String source) {
+        converted = false
+        this.javaCode = source
+        this
+    }
+
+    override getXtendCode() {
+        if (! converted) {
+            converted = runConverter
         }
-
-        public def run(Path source, Path sourceDirPath) {
-            if (batchConverter === null) {
-                throw new IllegalStateException("BackupAndConvert instance not configured yet.")
-            }
-            converter = converterProvider.get
-            formatter = formatterProvider.get
-            resourceSet = resourceSetProvider.get => [
-                classpathURIContext = class.classLoader
-            ]
-            
-            this.sourceDirPath = sourceDirPath
-
-            val backupFilePath = moveToBackup(source)
-            val javaCode = readJavaCode(backupFilePath)
-            val xtendCode = converter.toXtend(getUnitNameFrom(source), javaCode)
-            val xtendFormattedCode = formatXtendCode(xtendCode.xtendCode)
-            val destFilePath = getXtendFilePathFrom(source)
-            saveGeneratedCode(xtendFormattedCode, destFilePath)
+        if (! converted) {
+            return ""
         }
+        generatedXtendCode
+    }
 
-        private def formatXtendCode(String xtendCode) {
-            if (skipFormatting === SkipFormatting.yes) {
-                return xtendCode
-            }
-            try {
-                val xtendFile = file(xtendCode, skipValidation)
-                val resource = xtendFile.eResource as XtextResource
-                val regionAccess = regionBuilderProvider.get.forNodeModel(resource).create
-                val request = initRequest(regionAccess)
-                val replacements = formatter.format(request)
-                regionAccess.rewriter.renderToString(replacements)
-            } catch (Exception e) {
-                val msg = '''
+    override runConverter() {
+        converted = false
+        if (javaCode === null || javaCode.isEmpty) {
+            return converted
+        }
+        generatedXtendCode = run(javaCode)
+        converted
+    }
+
+    def run(String source) {
+        converted = false
+        if (convertConfig === null) {
+            throw new IllegalStateException("Convert instance not configured yet.")
+        }
+        converter = converterProvider.get
+        formatter = formatterProvider.get
+        resourceSet = resourceSetProvider.get => [
+            classpathURIContext = class.classLoader
+        ]
+
+        val xtendCode = converter.toXtend(dummyUnitName, source)
+        val generated = formatXtendCode(xtendCode.xtendCode)
+        converted = true
+        generated
+    }
+
+    private def getDummyUnitName() {
+        "dummyUnitName" + tmpFileNameSuffixGenerator++
+    }
+
+    private def formatXtendCode(String xtendCode) {
+        if (skipFormatting === SkipFormatting.yes) {
+            return xtendCode
+        }
+        try {
+            val xtendFile = file(xtendCode, skipValidation)
+            val resource = xtendFile.eResource as XtextResource
+            val regionAccess = regionBuilderProvider.get.forNodeModel(resource).create
+            val request = initRequest(regionAccess)
+            val replacements = formatter.format(request)
+            regionAccess.rewriter.renderToString(replacements)
+        } catch (Exception e) {
+            val msg = '''
                 // Formatting step canceled due to an exception:
                 «e.message.commentOut»
                 Raw xtend code:
                 «xtendCode»
-                '''
-                msg.error(e)
-                msg
-            } 
+            '''
+            msg.error(e)
+            msg
         }
-        
-        private def commentOut(String msg) {
-            msg.replaceAll("?m^", "//")
-        }
+    }
 
-        private def URI getDummyFileUriFromCode(String codesource) {
-            val packMatcher = Pattern.compile("package (\\S+)").matcher(codesource)
-            val classMatcher = Pattern.compile("class (\\w+)").matcher(codesource)
-            var filepath = if (packMatcher.find) {
-                    packMatcher.group(1).replace('.', '/') + "/"
-                } else {
-                    ""
-                }
-            filepath += if (classMatcher.find) {
-                classMatcher.group(1)
-            } else {
-                "Sample"
-            }
-            filepath += format("%6d", tmpFileNameSuffixGenerator++) + FILE_EXTENSION_SEP + XTEND_FILE_EXTENSION
-            URI.createURI(DUMMY_TMP_DEST_DIR + filepath)
+    private def file(String codesource, SkipValidation skipValidation) throws Exception {
+        val resource = resourceSet.createResource(getDummyFileUriFromCode(codesource))
+        resource.load(new StringInputStream(codesource), null)
+        if (resource.errors.size > 0) {
+            val msg = format("Xtend generated file contains error(s): %s", resource.errors.map[message].join('\n'))
+            msg.error
+            throw new IllegalStateException(msg)
         }
-
-        private def file(String codesource, SkipValidation skipValidation) throws Exception {
-            val resource = resourceSet.createResource(getDummyFileUriFromCode(codesource))
-            resource.load(new StringInputStream(codesource), null)
-            if (resource.errors.size > 0) {
-                val msg = format("Xtend generated file contains error(s): %s", resource.errors.map[message].join('\n'))
+        if (skipValidation === SkipValidation.no) {
+            val issues = Lists.newArrayList(
+                Iterables.filter(
+                    (resource as XtextResource).resourceServiceProvider.resourceValidator.validate(resource,
+                        CheckMode.ALL, CancelIndicator.NullImpl), new Predicate<Issue>() {
+                        override apply(Issue issue) {
+                            return issue.severity === Severity.ERROR
+                        }
+                    }))
+            if (! issues.isEmpty) {
+                val msg = format("Resource contained error(s): %s", issues)
                 msg.error
                 throw new IllegalStateException(msg)
-            } 
-            if (skipValidation === SkipValidation.no) {
-                val issues = Lists.newArrayList(
-                    Iterables.filter(
-                        (resource as XtextResource).resourceServiceProvider.resourceValidator.validate(resource,
-                            CheckMode.ALL, CancelIndicator.NullImpl), new Predicate<Issue>() {
-                            override apply(Issue issue) {
-                                return issue.severity === Severity.ERROR
-                            }
-                        }))
-                if (! issues.isEmpty) {
-                    val msg = format("Resource contained error(s): %s", issues)
-                    msg.error
-                    throw new IllegalStateException(msg)
-                }
             }
-            resource.contents.get(0) as XtendFile
         }
+        resource.contents.get(0) as XtendFile
+    }
 
-        private def initRequest(ITextRegionAccess regionaccess) {
-            extension val request = requestProvider.get
-            allowIdentityEdits = false
-            formatUndefinedHiddenRegionsOnly = false
-            preferences = new MapBasedPreferenceValues(preferenceKeys?: defaultProfileSettings)
-            textRegionAccess = regionaccess
-            if (regionaccess.hasSyntaxError)
-                exceptionHandler = ExceptionAcceptor.IGNORING
-            else
-                exceptionHandler = ExceptionAcceptor.LOGGING
-        }
+    private def commentOut(String msg) {
+        msg.replaceAll("(?m)^", "//")
+    }
 
-        private def getDefaultProfileSettings() {
-            val keys = PreferenceKeysProvider.allConstantKeys(XtendFormatterPreferenceKeys)
-            new HashMap<String, String> => [
-                for (key : keys) {
-                    put(key.id, key.defaultValue)
-                }
-                put(blankLinesBeforeFirstMember.id, String.valueOf(1))
-            ]
-        }
-        
-        private def void saveGeneratedCode(String xtendcode, Path dest) {
-            val buffer = CharBuffer.wrap(xtendcode)
-            val result = encoding.newEncoder.encode(buffer).array
-            format("Generated Xtend file: %s", dest.normalize).info
-            createDirectories(dest.parent)
-            write(dest, result)
-        }
-
-        private def getXtendFilePathFrom(Path source) {
-            getDestinationFileFrom(
-                source,
-                outputDirectoryPath,
-                isXtendGeneratedInPlace,
-                XTEND_FILE_EXTENSION
-            )
-        }
-
-        private def getUnitNameFrom(Path source) {
-            extension val fileName = source.fileName.toString
-            substring(0, length - originalFileExtension.length - FILE_EXTENSION_SEP.length)
-        }
-
-        private def readJavaCode(Path source) {
-            new String(readAllBytes(source), encoding)
-        }
-
-        private def getDestinationFileFrom(Path source, Path dest, boolean inPlace, String fileExtension) {
-            var destFileName = source.fileName.toString
-            format("File extension: %s", fileExtension).debug
-            if (fileExtension !== null) {
-                destFileName = destFileName.replaceFirst(originalFileExtension + '$', fileExtension)
+    private def URI getDummyFileUriFromCode(String codesource) {
+        val packMatcher = Pattern.compile("package (\\S+)").matcher(codesource)
+        val classMatcher = Pattern.compile("class (\\w+)").matcher(codesource)
+        var filepath = if (packMatcher.find) {
+                packMatcher.group(1).replace('.', '/') + "/"
+            } else {
+                ""
             }
-            format("File name: %s (%s)", destFileName, originalFileExtension).debug
-            var destFilePath = source.parent
-            if (! inPlace) {
-                val packagepath = sourceDirPath.relativize(destFilePath)
-                val destparent = dest.resolve(packagepath)
-                val movepath = destFilePath.relativize(destparent)
-                destFilePath = destFilePath.resolve(movepath)
-            }
-            destFilePath.resolve(destFileName)
+        filepath += if (classMatcher.find) {
+            classMatcher.group(1)
+        } else {
+            "Sample"
         }
+        filepath += format("%6d", tmpFileNameSuffixGenerator++) + FILE_EXTENSION_SEP + XTEND_FILE_EXTENSION
+        URI.createURI(DUMMY_TMP_DEST_DIR + filepath)
+    }
 
-        private def moveToBackup(Path source) {
-            format("Backup file: %s", backupDirectoryPath).debug
-            val backupFilePath = getDestinationFileFrom(
-                source,
-                backupDirectoryPath,
-                ! isOriginalFilesMoved,
-                backupFileExtension
-            )
-            format("Backup file: %s", backupFilePath.normalize).info
-            Files.createDirectories(backupFilePath.parent)
-            move(source, backupFilePath, ATOMIC_MOVE)
-        }
+    private def initRequest(ITextRegionAccess regionaccess) {
+        extension val request = requestProvider.get
+        allowIdentityEdits = false
+        formatUndefinedHiddenRegionsOnly = false
+        preferences = new MapBasedPreferenceValues(preferenceKeys ?: defaultProfileSettings)
+        textRegionAccess = regionaccess
+        if (regionaccess.hasSyntaxError)
+            exceptionHandler = ExceptionAcceptor.IGNORING
+        else
+            exceptionHandler = ExceptionAcceptor.LOGGING
+    }
+
+    private def getDefaultProfileSettings() {
+        val keys = PreferenceKeysProvider.allConstantKeys(XtendFormatterPreferenceKeys)
+        new HashMap<String, String> => [
+            for (key : keys) {
+                put(key.id, key.defaultValue)
+            }
+            put(blankLinesBeforeFirstMember.id, String.valueOf(1))
+        ]
+    }
+
 }
-    
-package interface BackupAndConvertConfig {
-    
-    def String getOriginalFileExtension()
-    
-    def String getBackupFileExtension()
-    
-    def boolean isOriginalFilesMoved()
-    
-    def boolean isXtendGeneratedInPlace()
-    
+
+package class BackupAndConvert {
+
+    @Inject
+    Provider<Convert> convertProvider
+
+    extension static val Logger LOGGER = LoggerFactory.getLogger(BackupAndConvert)
+
+    extension BackupAndConvertConfig convertConfig
+    extension StringConverter converter
+
+    Path sourceDirPath
+
+    public def configure(BackupAndConvertConfig convertConfig) {
+        this.convertConfig = convertConfig
+        this.converter = convertProvider.get.configure(this.convertConfig)
+        this
+    }
+
+    public def run(Path source, Path sourceDirPath) {
+        if (convertConfig === null) {
+            throw new IllegalStateException("BackupAndConvert instance not configured yet.")
+        }
+        this.sourceDirPath = sourceDirPath
+
+        val backupFilePath = moveToBackup(source)
+        val javaCode = readJavaCode(backupFilePath)
+        val xtendFormattedCode = converter.javaCode(javaCode).xtendCode
+        val destFilePath = getXtendFilePathFrom(source)
+        saveGeneratedCode(xtendFormattedCode, destFilePath)
+    }
+
+    private def void saveGeneratedCode(String xtendcode, Path dest) {
+        val buffer = CharBuffer.wrap(xtendcode)
+        val result = encoding.newEncoder.encode(buffer).array
+        format("Generated Xtend file: %s", dest.normalize).info
+        createDirectories(dest.parent)
+        write(dest, result)
+    }
+
+    private def getXtendFilePathFrom(Path source) {
+        getDestinationFileFrom(
+            source,
+            outputDirectoryPath,
+            isXtendGeneratedInPlace,
+            XTEND_FILE_EXTENSION
+        )
+    }
+
+    private def readJavaCode(Path source) {
+        new String(readAllBytes(source), encoding)
+    }
+
+    private def getDestinationFileFrom(Path source, Path dest, boolean inPlace, String fileExtension) {
+        var destFileName = source.fileName.toString
+        format("File extension: %s", fileExtension).debug
+        if (fileExtension !== null) {
+            destFileName = destFileName.replaceFirst(originalFileExtension + '$', fileExtension)
+        }
+        format("File name: %s (%s)", destFileName, originalFileExtension).debug
+        var destFilePath = source.parent
+        if (! inPlace) {
+            val packagepath = sourceDirPath.relativize(destFilePath)
+            val destparent = dest.resolve(packagepath)
+            val movepath = destFilePath.relativize(destparent)
+            destFilePath = destFilePath.resolve(movepath)
+        }
+        destFilePath.resolve(destFileName)
+    }
+
+    private def moveToBackup(Path source) {
+        format("Backup file: %s", backupDirectoryPath).debug
+        val backupFilePath = getDestinationFileFrom(
+            source,
+            backupDirectoryPath,
+            ! isOriginalFilesMoved,
+            backupFileExtension
+        )
+        format("Backup file: %s", backupFilePath.normalize).info
+        Files.createDirectories(backupFilePath.parent)
+        move(source, backupFilePath, ATOMIC_MOVE)
+    }
+}
+
+interface ConvertConfig {
+
+    enum SkipFormatting {
+        yes,
+        no
+    }
+
+    enum SkipValidation {
+        yes,
+        no
+    }
+
     def SkipValidation getSkipValidation()
-    
+
     def SkipFormatting getSkipFormatting()
-    
-    def Path getOutputDirectoryPath()
-    
-    def Path getBackupDirectoryPath()
-    
+
     def Charset getEncoding()
-    
+
     def Map<String, String> getPreferenceKeys()
-    
+
+}
+
+class DefaultConvertConfig implements ConvertConfig {
+
+    override getSkipValidation() {
+        SkipValidation.no
+    }
+
+    override getSkipFormatting() {
+        SkipFormatting.no
+    }
+
+    override getEncoding() {
+        UTF_8
+    }
+
+    override getPreferenceKeys() {
+        null
+    }
+
+}
+
+package interface BackupAndConvertConfig extends ConvertConfig {
+
+    def String getOriginalFileExtension()
+
+    def String getBackupFileExtension()
+
+    def boolean isOriginalFilesMoved()
+
+    def boolean isXtendGeneratedInPlace()
+
+    def Path getOutputDirectoryPath()
+
+    def Path getBackupDirectoryPath()
+
 }
 
 interface Converter {
-    
+
     def boolean runConverter()
+
+}
+
+interface StringConverter extends Converter {
+
+    def StringConverter javaCode(String source)
+
+    def StringConverter configure(ConvertConfig config)
+
+    def String getXtendCode()
+}
+
+interface ConfigurableConverter extends Converter {
+
+    def void setSkipFormatting(boolean skip)
+
+    def void setSkipValidation(boolean skip)
+
+    def void setPreferences(String path)
+
+}
+
+interface BatchConverter extends ConfigurableConverter {
 
     def void addSourceDirectory(String path)
 
@@ -549,11 +658,5 @@ interface Converter {
     def void setBackupDirectory(String path)
 
     def void setBackupFileExtension(String ext)
-    
-    def void setSkipFormatting(boolean skip)
-    
-    def void setSkipValidation(boolean skip)
-    
-    def void setPreferences(String path)
-    
+
 }

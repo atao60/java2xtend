@@ -3,8 +3,8 @@ package org.eclipse.xtend.java2xtend
 import java.util.Arrays
 import java.util.Iterator
 import org.eclipse.xtend.core.XtendStandaloneSetup
-import org.eclipse.xtend.java2xtend.converter.Converter
 import org.eclipse.xtend.java2xtend.converter.Java2XtendBatchConverter
+import org.eclipse.xtend.java2xtend.converter.BatchConverter
 
 /*
  * TODO: 
@@ -109,7 +109,7 @@ class Java2XtendBatchRunner {
     
     private static class Option {
         public String msg = null
-        public (Converter, String, Iterator<String>)=>void action = null
+        public (BatchConverter, String, Iterator<String>)=>void action = null
     }  
     
     static def void main(String[] args) {

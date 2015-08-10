@@ -13,6 +13,13 @@ project(modelVersion: '4.0.0') {
 			url 'http://www.eclipse.org/legal/epl-v10.html'
 		}
 	}
+	
+	distributionManagement {
+		snapshotRepository(id: 'snapshots.staging.repo') {
+			name 'Staging Repository - Snapshots'
+			url 'file://${snapshots.staging.repo}'
+		}
+	}
 
 	/* just to keep versions-maven-plugin quiet (as it's not a Maven plugin project)  */
 	prerequisites { maven '${maven.minimal.version}' }
@@ -66,7 +73,8 @@ project(modelVersion: '4.0.0') {
 
 		'guice.version' '4.0'
 		'eclipse.jdt.core.version' '3.11.0.v20150602-1242'
-		'eclipse.core.resources.version' '3.8.101.v20130717-0806' /* 3.7.100 */
+		/* org.eclipse.core:org.eclipse.core.resources: 3.7.100, 3.8.101.v20130717-0806 */
+		'eclipse.core.resources.version' '3.9.1.v20140825-1431' 
 		/* org.eclipse.core.runtime:org.eclipse.core.runtime: 3.7.0, 3.9.0.v20130326-1255 */
 		'eclipse.core.runtime.version' '3.10.0-v20140318-2214'
 		'digester3.version' '3.2'
@@ -92,7 +100,7 @@ project(modelVersion: '4.0.0') {
 			}}
 		dependency('org.eclipse.core:runtime:${eclipse.core.runtime.version}')
 		dependency('org.eclipse.tycho:org.eclipse.jdt.core:${eclipse.jdt.core.version}')
-		dependency('org.eclipse.core:org.eclipse.core.resources:${eclipse.core.resources.version}')
+		dependency('org.eclipse.birt.runtime:org.eclipse.core.resources:${eclipse.core.resources.version}')
 		dependency('com.google.inject:guice:${guice.version}')
 		dependency('org.apache.commons:commons-digester3:${digester3.version}') {
 			exclusions {
