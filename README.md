@@ -11,7 +11,7 @@ This is where this project comes in.
 It was a good opportunity to learn more about:  
 
 - [OpenShift Online](https://www.openshift.com/products/online): this PAAS platform provides a free plan which is enough to set up an online service. So you can try the *Xtend*'s Java to Xtend converter at [j2x converter](http://j2xconverter-atao60.rhcloud.com/).
-- [Github](https://github.com/) as a [Maven](https://maven.apache.org/) repository: this capability is very useful to use the present project as a base of the above [online project](https://github.com/j2xconverter). 
+- [Github](https://github.com/) as a [Maven](https://maven.apache.org/) repository: this capability is very useful to use the present project as a base of the above [online project](https://github.com/atao60/j2x-on-openshift). 
 
 Licenses & credits
 ------
@@ -83,7 +83,7 @@ after conversion (see note (°) above) will become:
 Requirements
 -----
 
-This project used the version 2.9.0.beta3 of *Xtend*.
+This project uses the version 2.9.0.beta3 of *Xtend*.
 
 It requires:
 
@@ -101,7 +101,7 @@ The project is configured with [Maven Polyglot](https://github.com/takari/maven-
 
 Under *Eclipse Luna*, *M2Eclipse* is not aware of *Maven Polyglot* yet. At the moment (*M2Eclipse* v. 1.5.1), the only workaround is to use JBoss Tools [m2e-polyglot-poc](https://github.com/jbosstools/m2e-polyglot-poc). This tool automatically generates pom.xml files from the Polyglot ones. Don't remove the pom.xml file, it is required by *m2e-polyglot-poc* to work.
 	
-Build
+Build & deploy
 -----
 
 ### From the command line
@@ -123,7 +123,7 @@ Two versions of the jar are now available:
 - a "fat" one, i.e. that is executable,
 - a standard one, to be used by other projects as the [online converter](https://github.com/atao60/j2x-on-openshift).
     
-**3.** Deploy on a public Maven repository
+**3.** Deploy on a public *Maven* repository
 
     cd <local git path>
     git clone git@github.com:atao60/snapshots.git
@@ -137,7 +137,9 @@ Two versions of the jar are now available:
     git commit -m "New update"
     git push 
          
-Then the standard jar file is available from this [Github repository](https://github.com/atao60/snapshots/raw/master/) working as a *Maven* repository.         
+Then the standard jar file is available from this [Github repository](https://github.com/atao60/snapshots/raw/master/) working as a *Maven* repository.  
+
+**Warning** As it is, Maven deploy doesn't remove the files of the previous deployments. It has to be done manually otherwise there is no guarantees a user pom will catch the good files.       
 
 ### Under *Eclipse*
 
@@ -191,10 +193,10 @@ the file extension *backup*.
 
 With it, the new *Xtend* files will be in the same directories as the original Java files. In the meantime, these Java files will have been renamed with the file extension `backup`.
 
-Note. To convert Java code available as a string, call directly
+Note. Even if java2xtend's [Convert class](https://github.com/atao60/java2xtend/blob/master/src/main/xtend/org/eclipse/xtend/java2xtend/converter/Java2XtendBatchConverter.xtend) helps to hide a lot of details, it's always possible to convert Java code available as a string by calling directly
 [JavaConverter](https://github.com/eclipse/xtext/blob/2.9.0.beta3/plugins/org.eclipse.xtend.core/src/org/eclipse/xtend/core/javaconverter/JavaConverter.xtend) 
 and 
-[XtendFormatter](https://github.com/eclipse/xtext/blob/2.9.0.beta3/plugins/org.eclipse.xtend.core/src/org/eclipse/xtend/core/formatting2/XtendFormatter.xtend)
+[XtendFormatter](https://github.com/eclipse/xtext/blob/2.9.0.beta3/plugins/org.eclipse.xtend.core/src/org/eclipse/xtend/core/formatting2/XtendFormatter.xtend).
 
 
 
