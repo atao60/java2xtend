@@ -51,8 +51,8 @@ import static java.nio.file.FileVisitResult.*
 import static java.nio.file.Files.*
 import static java.nio.file.StandardCopyOption.*
 import static org.eclipse.xtend.core.formatting2.XtendFormatterPreferenceKeys.*
-import static org.eclipse.xtend.java2xtend.converter.Convert.*
 import static org.eclipse.xtend.java2xtend.util.PathUtils.*
+import static org.eclipse.xtend.java2xtend.converter.DefaultStringConverter.*
 
 /**
  * Convert to Xtend all the Java files found under a list of source directories
@@ -305,9 +305,9 @@ class Java2XtendBatchConverter implements BatchConverter, BackupAndConvertConfig
 
 }
 
-public class Convert implements StringConverter {
+public class DefaultStringConverter implements StringConverter {
 
-    extension static val Logger LOGGER = LoggerFactory.getLogger(Convert)
+    extension static val Logger LOGGER = LoggerFactory.getLogger(DefaultStringConverter)
     static val DUMMY_TMP_DEST_DIR = "target/tmp/"
 
     @Inject
@@ -328,7 +328,7 @@ public class Convert implements StringConverter {
     String javaCode
     String generatedXtendCode
     boolean converted = false
-    int tmpFileNameSuffixGenerator = 0
+    int tmpFileNameSuffixNumber = 0
 
     extension ConvertConfig convertConfig
 
@@ -380,7 +380,14 @@ public class Convert implements StringConverter {
     }
 
     private def getDummyUnitName() {
-        "dummyUnitName" + tmpFileNameSuffixGenerator++
+        "dummyUnitName" + tmpFileNameSuffixGenerator
+    }
+    
+    private def getTmpFileNameSuffixGenerator() {
+        if (tmpFileNameSuffixNumber < Integer.MAX_VALUE) {
+            return tmpFileNameSuffixNumber++
+        }
+        tmpFileNameSuffixNumber = 0
     }
 
     private def formatXtendCode(String xtendCode) {
@@ -396,8 +403,10 @@ public class Convert implements StringConverter {
             regionAccess.rewriter.renderToString(replacements)
         } catch (Exception e) {
             val msg = '''
-                // Formatting step canceled due to an exception:
+                // Formatting step canceled due to an exception
+                // (the generated code is after the exception message)
                 «e.message.commentOut»
+                ================================================================
                 Raw xtend code:
                 «xtendCode»
             '''
@@ -449,7 +458,7 @@ public class Convert implements StringConverter {
         } else {
             "Sample"
         }
-        filepath += format("%6d", tmpFileNameSuffixGenerator++) + FILE_EXTENSION_SEP + XTEND_FILE_EXTENSION
+        filepath += format("%6d", tmpFileNameSuffixGenerator) + FILE_EXTENSION_SEP + XTEND_FILE_EXTENSION
         URI.createURI(DUMMY_TMP_DEST_DIR + filepath)
     }
 
@@ -480,7 +489,7 @@ public class Convert implements StringConverter {
 package class BackupAndConvert {
 
     @Inject
-    Provider<Convert> convertProvider
+    Provider<DefaultStringConverter> convertProvider
 
     extension static val Logger LOGGER = LoggerFactory.getLogger(BackupAndConvert)
 
