@@ -14,6 +14,13 @@ project(modelVersion: '4.0.0') {
 		}
 	}
 	
+	scm {
+//		connection '${scm.gitScmUrl}'
+//		/* project.scm.developerConnection is used by 'scm:checkin' */
+//		developerConnection '${scm.publish.pubScmUrl}'
+		url '${github.repo.url}'
+	}
+	
 	distributionManagement {
 		snapshotRepository(id: 'snapshots.staging.repo') {
 			name 'Staging Repository - Snapshots'
@@ -32,6 +39,29 @@ project(modelVersion: '4.0.0') {
 		'xtend.outputDir' '${project.build.directory}/xtend-gen/main'
 		'xtend.testOutputDir' '${project.build.directory}/xtend-gen/test'
 
+		'snapshots.staging.repo' '${project.build.directory}/mvn-repo'
+		
+		'repository.domain' 'github.com'
+		'repository.user' 'atao60'
+		'repository.name' 'snapshots'
+		'github.repo.url' 'https://${repository.domain}/${repository.user}/${repository.name}'
+		'git.https.url' '${github.repo.url}.git'
+		'git.git.url' 'git@${repository.domain}:${repository.user}/${repository.name}.git' 
+		'git.ssh.url' 'ssh://${repository.domain}/${repository.user}/${repository.name}.git'
+		/* With 'master' no needs to generate an index.html file in each (sub-)dir with the dir content list
+		   but no more access through http://${repository.user}.github.io/${repository.name},
+		   at least without automatic synchronisation between 'master' and 'gh-pages'
+		 */
+		'scm.gitScmUrl' 'scm:git:${git.git.url}'
+		'scm.publish.pubScmUrl' 'scm:git:${git.git.url}'
+		'scm.publish.scmBranch' 'master' /*'gh-pages'*/
+		
+		'xtend.path' 'org/eclipse/xtend'
+		'j2x.path' '${xtend.path}/${project.artifactId}/${project.version}'
+		'scmWorkingDirectory' '${project.build.directory}/checkout'
+		'scmToBeRemovedDirectory' '${scmWorkingDirectory}/${j2x.path}'
+		
+		
 		/* Compiler and encoding */
 		'jdk.version' '1.8'
 		'default.encoding' 'UTF-8'
@@ -67,6 +97,9 @@ project(modelVersion: '4.0.0') {
 		'xtend.maven.plugin.version' '${xtendVersion}'
 		'spring.boot.maven.plugin.version' '1.2.5.RELEASE'
 		'maven.antrun.plugin.version' '1.8'
+		/* 'github.site.maven.plugin.version' '0.9' */
+		'maven.scm.publish.plugin.version' '1.1'
+		'maven.scm.plugin.version' '1.9.4'
 
 		/* Dependencies management */
 		'xtend.version' '${xtendVersion}'
@@ -120,6 +153,11 @@ project(modelVersion: '4.0.0') {
 	}
 
 	build {
+		plugins {
+			plugin('org.codehaus.mojo:build-helper-maven-plugin')
+			plugin('org.eclipse.xtend:xtend-maven-plugin')
+			plugin('com.github.sviperll:coreext-maven-plugin:0.15')
+		}
 		pluginManagement {
 			plugins {
 				plugin('org.codehaus.mojo:build-helper-maven-plugin:${build.helper.maven.plugin.version}') {
@@ -151,7 +189,13 @@ project(modelVersion: '4.0.0') {
 								outputDirectory '${xtend.outputDir}'
 								testOutputDirectory '${xtend.testOutputDir}'
 								skipXtend 'false'
-							}}}}
+							}
+							}}
+					dependencies {
+						dependency('org.ow2.asm:asm-commons:${asm.version}')
+					}
+
+					}
 				plugin('org.apache.maven.plugins:maven-surefire-plugin:${maven.surefire.plugin.version}') {
 					configuration {
 						includes {
@@ -164,48 +208,6 @@ project(modelVersion: '4.0.0') {
 						excludes { exclude '**/org/eclipse/xtend/core/tests/**/*TestCase.java' }
 					}
 				}
-				plugin ('org.apache.maven.plugins:maven-enforcer-plugin:${maven.enforcer.plugin.version}') {
-					executions {
-						execution(id: 'enforce-versions') {
-							goals {  goal 'enforce' /* default phase: validate */  }
-							configuration {
-								rules {
-									requireMavenVersion {
-										version '${maven.minimal.version}'
-										message '''[ERROR] OLD MAVEN [${maven.version}] in use. Maven
-                                            ${maven.minimal.version} or newer is required.'''
-									}
-									requireJavaVersion {
-										version '${jdk.version}'
-										message '''[ERROR] OLD JDK [${java.version}] in use. This project
-                                            requires JDK ${jdk.version} or newer.'''
-									}
-									requirePluginVersions {
-										banLatest 'true'
-										banRelease 'true'
-										banSnapshots 'true'
-									}
-									bannedDependencies {
-										searchTransitive 'true'
-										excludes {
-											exclude 'org.slf4j:slf4j-log4j12'
-											exclude 'org.slf4j:slf4j-jdk14'
-											exclude 'commons-logging'
-											exclude 'log4j'
-											exclude 'org.apache.logging.log4j'
-										}}}}}}}
-				plugin('org.codehaus.mojo:versions-maven-plugin:${versions.maven.plugin.version}') {
-					executions {
-						execution(id: 'check-versions') {
-							phase 'validate' /* no default phase */
-							goals {
-								goal 'display-dependency-updates'
-								goal 'display-plugin-updates'
-								goal 'display-property-updates'
-							}}}
-					/* required to avoid warning with new beta version */
-					configuration  {     rulesUri 'file://${project.basedir}/src/conf/versionrules.xml'    }
-				}
 				plugin('org.apache.maven.plugins:maven-clean-plugin:${maven.clean.plugin.version}')
 				plugin('org.apache.maven.plugins:maven-compiler-plugin:${maven.compiler.plugin.version}')
 				plugin('org.apache.maven.plugins:maven-resources-plugin:${maven.resources.plugin.version}')
@@ -213,14 +215,136 @@ project(modelVersion: '4.0.0') {
 				plugin('org.apache.maven.plugins:maven-install-plugin:${maven.install.plugin.version}')
 				plugin('org.apache.maven.plugins:maven-deploy-plugin:${maven.deploy.plugin.version}')
 				plugin('org.apache.maven.plugins:maven-site-plugin:${maven.site.plugin.version}')
-			}}
-		plugins {
-			plugin('org.codehaus.mojo:build-helper-maven-plugin')
-			plugin('org.apache.maven.plugins:maven-enforcer-plugin')
-			plugin('org.codehaus.mojo:versions-maven-plugin')
-			plugin('org.eclipse.xtend:xtend-maven-plugin')
-		}}
+			}}}
 	profiles {
+		profile(id: 'maven-repo-update') {
+			/* Neither Github's site-maven-plugin nor maven-scm-publish-plugin can't deal with 
+			   removing old files for a published Maven snapshot artifact. It must be dealt with 
+			   explicitly, e.g. with maven-scm-plugin. But with scm:remove, the option --ignore-unmatch 
+			   for git-rm is not available. The command git-rm can't deal with an empty set of files, 
+			   e.g. when the directory for a Maven artifact version is missing. The Maven build will 
+			   stop immediately.
+			   This is why antrun:run must be used to launch git-rm with --ignore-unmatch.
+			 */
+			properties {
+				'profile.active' 'true'
+			}
+			build {
+				plugins {
+					plugin('org.apache.maven.plugins:maven-antrun-plugin:${maven.antrun.plugin.version}') {
+						executions {
+							execution {
+								/* maven-antrun-plugin must be placed before maven-scm-plugin 
+								   in the build/plugins section so that 'mark-all-files-to-be-removed'
+								   will be run between scm:checkout (in phase 'install')
+								   and scm:checkin (in phase 'deploy') */
+								id 'mark-all-files-to-be-removed'
+								phase 'deploy'  
+								configuration {
+									target {  
+										exec(executable:'/bin/sh', osfamily:'unix') {
+											arg(value:'-c')
+											arg(value:'cd ${scmWorkingDirectory} && git rm -r --ignore-unmatch ${j2x.path}/')
+										}
+									}}
+								goals { goal 'run' }
+							}}}
+					plugin('org.apache.maven.plugins:maven-scm-plugin:${maven.scm.plugin.version}') {
+						configuration {
+							checkoutDirectory '${scmWorkingDirectory}'  
+							workingDirectory '${scmWorkingDirectory}'
+							scmVersion '${scm.publish.scmBranch}'
+							scmVersionType 'branch'
+						}
+						executions {
+							execution {
+								id 'checkout'
+								phase 'install'
+								goals { goal 'checkout' }
+								configuration {
+									connectionUrl 'scm:git:${git.https.url}'    // '${scm.gitScmUrl}'
+								}
+							}
+							execution {
+								id 'commit-to-remove-all-files'
+								phase 'deploy'
+								goals { goal 'checkin' }
+								configuration { 
+									message 'Removing published Maven artifacts for ${project.groupId}:${project.artifactId}:${project.version}'
+									developerConnectionUrl 'scm:git:${git.https.url}'    // '${scm.gitScmUrl}'
+							}}}}
+					/* It should be possible to use github's site-maven-plugin here: give it a try?
+					 In any case, the site-maven-plugin options merge/includes/excludes wouldn't help
+					 to avoid stacking successive snapshot versions. See comment below.*/
+				    plugin('org.apache.maven.plugins:maven-scm-publish-plugin:${maven.scm.publish.plugin.version}') {
+					  configuration {
+						  checkoutDirectory '${scmWorkingDirectory}'
+						  skipDeletedFiles 'true'
+						  content '${snapshots.staging.repo}'
+						  tryUpdate 'true'
+						  pubScmUrl 'scm:git:${git.https.url}'    // '${scm.publish.pubScmUrl}'
+						  scmBranch '${scm.publish.scmBranch}'
+						  checkinComment 'Publishing Maven artifacts for ${project.groupId}:${project.artifactId}:${project.version} ~${maven.build.timestamp}'
+					  }
+					  executions {
+						  execution {
+							  id 'publish-new-snapshot'
+							  phase 'deploy'
+							  goals { goal 'publish-scm' }
+					}}}
+				}}}
+		profile(id: 'enforce') {
+			activation { property(name: 'enforce') }
+			build {
+				plugins {
+					plugin('org.apache.maven.plugins:maven-enforcer-plugin')
+					plugin('org.codehaus.mojo:versions-maven-plugin')
+				}
+				pluginManagement {
+					plugins {
+						plugin ('org.apache.maven.plugins:maven-enforcer-plugin:${maven.enforcer.plugin.version}') {
+							executions {
+								execution(id: 'enforce-versions') {
+									goals {  goal 'enforce' /* default phase: validate */  }
+									configuration {
+										rules {
+											requireMavenVersion {
+												version '${maven.minimal.version}'
+												message '''[ERROR] OLD MAVEN [${maven.version}] in use. Maven
+                                            ${maven.minimal.version} or newer is required.'''
+											}
+											requireJavaVersion {
+												version '${jdk.version}'
+												message '''[ERROR] OLD JDK [${java.version}] in use. This project
+                                            requires JDK ${jdk.version} or newer.'''
+											}
+											requirePluginVersions {
+												banLatest 'true'
+												banRelease 'true'
+												banSnapshots 'true'
+											}
+											bannedDependencies {
+												searchTransitive 'true'
+												excludes {
+													exclude 'org.slf4j:slf4j-log4j12'
+													exclude 'org.slf4j:slf4j-jdk14'
+													exclude 'commons-logging'
+													exclude 'log4j'
+													exclude 'org.apache.logging.log4j'
+												}}}}}}}
+						plugin('org.codehaus.mojo:versions-maven-plugin:${versions.maven.plugin.version}') {
+							executions {
+								execution(id: 'check-versions') {
+									phase 'validate' /* no default phase */
+									goals {
+										goal 'display-dependency-updates'
+										goal 'display-plugin-updates'
+										goal 'display-property-updates'
+									}}}
+							/* required to avoid warning with new beta version */
+							configuration  {     rulesUri 'file://${project.basedir}/src/conf/versionrules.xml'    }
+						}
+					}}}}
 		profile(id: 'standalone') {
 			activation { property(name: 'standalone') }
 			build {

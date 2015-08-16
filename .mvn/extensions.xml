@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extensions>
-    <extension>
+    <extension><!-- Polyglot for Maven with Groovy -->
         <groupId>io.takari.polyglot</groupId>
         <artifactId>polyglot-groovy</artifactId>
         <version>0.1.10</version>
+    </extension>
+    <extension><!-- Tool to modularize maven build configuration -->
+        <groupId>com.github.sviperll</groupId>
+        <artifactId>maven-profiledep-extension</artifactId>
+        <version>0.15</version>
     </extension>
 </extensions>

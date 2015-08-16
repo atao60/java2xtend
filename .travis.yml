@@ -1,0 +1,15 @@
+language: java
+jdk:
+- oraclejdk8
+env:
+  global:
+  - secure: aFmBaVFqq1SWvmKY0fdpnaHqkip+eqqwW/tGvNrUOZRQE2t/B0dbOZ/k3ywnAApAMBQa0Of85ptj9H3ncqGVoFxL087mw+pOWQD5W2/KipzgzJW/WYR/X+9GpkH/pCmkojgTPIxA4Qh9pcmE4Ah5x1lVndi5Qv5eqDOZjMrg1R6bw2xfM9UKyD7+IQCqKgrZXyINX8AkMHWhkNNBL+N/2qzzrkV8aGAvVxMOCCshYYJEv6AAgkdFUYMFEpm6F7NdCE5tzPvVulHSl6i34M0e/rG+d5fMgc41DJcTngu55k1pa3G0/lBQS6oyLv2ffAwTYda5LnZ/EpKQHwq+WQ0GZiKoGKsTpwz5JYQxMvInWS2cjyBMSugxhE2B1nePe/CtHWhMfPPhY36ZUAl7bkfCx8mMj8j/chNP/SEX4IGQR4UCvPyWyJQLR+wjeVSJVUk8zYBohVbnO8KfBvP9yVF6MM8KiXFvMrpqVnFdec91Soe5naAZoDP2pHx+4GKpnx6q9R0qSTRBpDskrzbUX4dGcePCFnH0ZsYHxHJ4eD3Nf3fDIsmk8CmqvHdLENwadSPM2o0wM/BagcaHq2dpOdyJ6/3XABQpXPKtdbuCCpbyPcnfG0keNs5BHWlkgfok884NcNltf2qAAw0i+8t9sejaoCudy69EbH8UitWKUmIpXe8=
+before_install:
+- echo -e "machine github.com\n  login $TOKEN" >> ~/.netrc
+- cat ~/.netrc
+- echo -e "[user]\n  name = atao60\n  email = email-blocked" >> ~/.gitconfig
+- cat ~/.gitconfig
+after_success:
+# Add '-Pmaven-repo-update' is required here as long as Travis doesn't run with Maven 3.3.1+ 
+- mvn clean deploy -Dmaven.test.skip=true -Pmaven-repo-update
+  
