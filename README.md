@@ -1,4 +1,4 @@
-A Java to Xtend Batch Converter
+A Java to Xtend Batch Converter [![Build Status](https://travis-ci.org/atao60/java2xtend.svg?branch=master)](https://travis-ci.org/atao60/java2xtend)
 ==========
 
 Rational
@@ -15,6 +15,13 @@ It was a good opportunity to learn more about:
 
 Additionally, it's a foundation stone to setup an [online Java to Xtend converter](http://j2xconverter-atao60.rhcloud.com/) with the help of [OpenShift Online](https://www.openshift.com/products/online): this PAAS platform provides a free plan which is enough to set up such an online service. The code is available with the project [j2x-on-openshift](https://github.com/atao60/j2x-on-openshift). 
 
+Warning (15/08/2015)
+-----   
+
+This project uses:  
+- *Xtend* 2.9.0.beta3: even if it seems there are no issues about it, it's still a beta version. 
+- [Maven](https://maven.apache.org/) 3.3.1 or above. It provides the extension support (see file .mvn/extensions.xml). Many tools doesn't support it yet, e.g. *Travis-CI* or [M2Eclipse](http://eclipse.org/m2e/), more details below.
+    
 
 Licenses & credits
 ------
@@ -83,13 +90,6 @@ after conversion (see note (°) above) will become:
 		
 	}
 	
-Warning (15/08/2015)
------	
-
-This project uses:  
-- *Xtend* 2.9.0.beta3: even if it seems there are no issues about it, it's still a beta version. 
-- [Maven](https://maven.apache.org/) 3.3.1 or above. It provides the extension support (see file .mvn/extensions.xml). Many tools doesn't support it yet, e.g. *Travis-CI* or [M2Eclipse](http://eclipse.org/m2e/), more details below.
-	
 Requirements
 -----
 
@@ -133,7 +133,7 @@ Two versions of the jar are now available:
 - a "fat" one, i.e. that is executable,
 - a standard one, to be used by other projects as the [online converter](https://github.com/atao60/j2x-on-openshift).
     
-**3.** CI and Deploy
+**3.** Deploy on snapshots repository
 
 Continuous integration and deployment are managed with *Travis-CI* service. As soon as a commit is pushed on the *java2xtend* repository, a continuous integration cycle is launched. If it passes, then a new snapshot version of the artifact becomes available from this [Maven repository](https://github.com/atao60/snapshots).
 
