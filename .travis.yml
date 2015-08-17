@@ -1,12 +1,15 @@
 language: java
 jdk:
 - oraclejdk8
+env:
+  global:
+    secure: H9GIgy0jBfVBTJ2Az0U8SVV71h3jrBmxtQrNlvcd928UXjvCW8g5z5iN92KpQP7Y01mpOg2YpLWIKcaZxpQmGDJXcwKuJuugwCFVdQA3dsJIafsnmhEZXNhIrFNL2L1NyUFHyUTiBkbYxSwPyASHKsT5wrgrt57r1rYiFofZb/i5NEChguR35HKAgIWTj9X5Jz9B9rPTLaoc/PPkXOMcU+uVzkZ9AwDE+eIpu/SSq/J/dtp5aAYiuIS/5QdYqtdzECVfg72FEbFeUCYUNVTO8h0XJ6NqzIH9Og1KqFn/f8eGzx+yCS+2mczcjm2IgqYFCXLy2CDHcA7M5Bq1SP4qTLVf4ydmmWEviOZR+oDFOO/i2NY4AfdWtzHpDlKIMbUWrzdnXCN159V35qKrmwaWK6fkUC72k9EHgUtB98QeejwvT/YxIU+ND3ug5misv9Hcid9x1AuZ6g2gHYz6Pv1Qwpsd2GA/ETcTEpcbaQFKqxU0b6HdZ/XyexGmQclgLQ/nniiOenZOMxOHOJlL0AU8Bd1IKjjdZRejmooMmEz5HoYky3FBmsRszaYNC7s/wUwCqo7jbXfwLgTSX7Icsh6GedcH1VMGSv3eL7WH/q9tX4CXC/HO0uMirc2+GWHgur8ZvGqij9cX0gh9z0HDwatuFDt2NJGc8D1NlZxBCOl+8cM=
 before_install:
 - echo -e "machine github.com\n  login $TOKEN" >> ~/.netrc
 - cat ~/.netrc
 - echo -e "[user]\n  name = atao60\n  email = email-blocked" >> ~/.gitconfig
 - cat ~/.gitconfig
 after_success:
+# As long as Travis doesn't work with Maven 3.3.1+, profile maven-repo-update must be specified here 
 - mvn clean deploy -Dmaven.test.skip=true -Pmaven-repo-update
-dd:
-  secure: UQnh3/YAXFgm9RYdaE0f0f17RobZQxf3Xe7RzJuZuVrb2fw3IZyxGEVReo3/1Gu0JNJFIy8ynU2ZIJO+739ku62ybOI2OZcGXdfcjF2gIn51ssFsvnx1sEEB1h9ppTocUolD500Hgt5FFLaLJGCMYvBTR3a81ZtpffZEqasEsxl+7Y6lrSzADMWGPxug2rNZLvAiezNrB5LupOuai1FSdxC81TKoydNTxOC3dAQQ6x0To7d6PYIx0jOKpHSZZ1f0HsQi689T6CzvMJggP7rOxD1jx3lot09Tw3T/ev/ykGQmk3zweE3Q9rAzgScWc2GRYA/O3UU7uDHuH8yxeMsGB4YNSeIbGilCYvH5pu+9dKsOYJnpk+BkPDAmLZCYvABi69kmO27HJnABKBp5EmxnvRHHm1qMtuZVv9UErPPGXHMf7Uaa2Rw+iBKQ+mg7jFzFEDMU1VhDZ+7bOUw5cTNY+V2Gn2L6UKZA8sYBsSrPjpK2rZV9JHyScwJ/EUOddgzX6ybbFV0zTw5FiACK2F9cvOTMVPCxdT3YzUElx1tbJ0T8rHRuxIzMaGwh3V6k37Ha7b2SnZKJQMXkhZ0wWz0sTmequ8bgNUzoB04+Xb0at0RRvDJotsPkkCCL+ZtLPHWaHLhxUDs3BlELw0xQP9ALFx3pDAHCGbv87X23uk+z/k8=
+    
