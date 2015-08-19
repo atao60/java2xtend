@@ -11,4 +11,4 @@ before_install:
 - echo -e "[user]\n  name = atao60\n  email = $GITHUB_USER_EMAIL" >> ~/.gitconfig
 - cat ~/.gitconfig
 after_success:
-- mvn clean deploy -Dmaven.test.skip=true -Pmaven-repo-update
+- mvn clean deploy -Dmaven.test.skip=true -Pstandalone -Pmaven-repo-update 
