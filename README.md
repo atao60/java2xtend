@@ -10,7 +10,7 @@ This is where this project comes in.
 
 It was a good opportunity to learn more about:  
 
-- [Github](https://github.com/) as a [Maven](https://maven.apache.org/) repository: this capability is very useful to use the present project as a base of the above [online project](https://github.com/atao60/j2x-on-openshift);
+- [Github](https://github.com/) as a [Maven](https://maven.apache.org/) repository: this capability is very useful to use the present project as a base of the [online project](https://github.com/atao60/j2x-on-openshift) (see below);
 - [Travis-CI](https://travis-ci.org): this CI platform provides a free plan for open source projects. 
 
 Additionally, it's a foundation stone to setup an [online Java to Xtend converter](http://j2xconverter-atao60.rhcloud.com/) with the help of [OpenShift Online](https://www.openshift.com/products/online): this PAAS platform provides a free plan which is enough to set up such an online service. The code is available with the project [j2x-on-openshift](https://github.com/atao60/j2x-on-openshift). 
@@ -26,7 +26,7 @@ This project uses:
 Licenses & credits
 ------
 
-Licenced under [Eclipse Public License](http://www.eclipse.org/legal/epl-v10.html).
+Licensed under [Eclipse Public License](http://www.eclipse.org/legal/epl-v10.html).
 
 A first attempt to create a Java converter from scratch was made by [Krzysztof Rzymkowski's project](https://github.com/rzymek/java2xtend).
 

@@ -3,13 +3,12 @@ jdk:
 - oraclejdk8
 env:
   global:
-    secure: H9GIgy0jBfVBTJ2Az0U8SVV71h3jrBmxtQrNlvcd928UXjvCW8g5z5iN92KpQP7Y01mpOg2YpLWIKcaZxpQmGDJXcwKuJuugwCFVdQA3dsJIafsnmhEZXNhIrFNL2L1NyUFHyUTiBkbYxSwPyASHKsT5wrgrt57r1rYiFofZb/i5NEChguR35HKAgIWTj9X5Jz9B9rPTLaoc/PPkXOMcU+uVzkZ9AwDE+eIpu/SSq/J/dtp5aAYiuIS/5QdYqtdzECVfg72FEbFeUCYUNVTO8h0XJ6NqzIH9Og1KqFn/f8eGzx+yCS+2mczcjm2IgqYFCXLy2CDHcA7M5Bq1SP4qTLVf4ydmmWEviOZR+oDFOO/i2NY4AfdWtzHpDlKIMbUWrzdnXCN159V35qKrmwaWK6fkUC72k9EHgUtB98QeejwvT/YxIU+ND3ug5misv9Hcid9x1AuZ6g2gHYz6Pv1Qwpsd2GA/ETcTEpcbaQFKqxU0b6HdZ/XyexGmQclgLQ/nniiOenZOMxOHOJlL0AU8Bd1IKjjdZRejmooMmEz5HoYky3FBmsRszaYNC7s/wUwCqo7jbXfwLgTSX7Icsh6GedcH1VMGSv3eL7WH/q9tX4CXC/HO0uMirc2+GWHgur8ZvGqij9cX0gh9z0HDwatuFDt2NJGc8D1NlZxBCOl+8cM=
+  - secure: H9GIgy0jBfVBTJ2Az0U8SVV71h3jrBmxtQrNlvcd928UXjvCW8g5z5iN92KpQP7Y01mpOg2YpLWIKcaZxpQmGDJXcwKuJuugwCFVdQA3dsJIafsnmhEZXNhIrFNL2L1NyUFHyUTiBkbYxSwPyASHKsT5wrgrt57r1rYiFofZb/i5NEChguR35HKAgIWTj9X5Jz9B9rPTLaoc/PPkXOMcU+uVzkZ9AwDE+eIpu/SSq/J/dtp5aAYiuIS/5QdYqtdzECVfg72FEbFeUCYUNVTO8h0XJ6NqzIH9Og1KqFn/f8eGzx+yCS+2mczcjm2IgqYFCXLy2CDHcA7M5Bq1SP4qTLVf4ydmmWEviOZR+oDFOO/i2NY4AfdWtzHpDlKIMbUWrzdnXCN159V35qKrmwaWK6fkUC72k9EHgUtB98QeejwvT/YxIU+ND3ug5misv9Hcid9x1AuZ6g2gHYz6Pv1Qwpsd2GA/ETcTEpcbaQFKqxU0b6HdZ/XyexGmQclgLQ/nniiOenZOMxOHOJlL0AU8Bd1IKjjdZRejmooMmEz5HoYky3FBmsRszaYNC7s/wUwCqo7jbXfwLgTSX7Icsh6GedcH1VMGSv3eL7WH/q9tX4CXC/HO0uMirc2+GWHgur8ZvGqij9cX0gh9z0HDwatuFDt2NJGc8D1NlZxBCOl+8cM=
+  - secure: IqFkZqn8qUrjHCfIewVpuP1MbH5387j8D45i+iCa2xy4FsgjslVMuOUdnfm+Q/37lPPTpUFccjJZIU3lnQ2F6kHOuO0F3G4xacE25s9ZmXth5+weizFI4seBDW9J59QtnG712u0pcd56Cu2mNSsvZxdHWnjvSfULvy472IODByI+sE6yluqcteigOjk2+K5xFhh0A6QpUTjNthIodLyTsGXKaq1Z4r/jIi28RteyK34+lmX5HOKyunaag+WtpcQTHuhFWPwsl9gkJ9cI6u8LJIV5X/8hWvhFsvglH4Gkfu+wYmUnXI1HtCiiEnbXdW0TlzW6ZbK9KqMGjKSwtJzT2BgCaX+rkesHEu9V03V5hmufLC2vVaHEc8fvR9bwFQfTI/YZKNgMRssJMBDQRe5kuWUfjP1SOQE/Rk0S+00v4TQ43zJdB7VBmqhNevMwkwUqdAbLx2MSgbP+3TMTBWfp76i4Mb0H2LiAHhbXRpAoyAziLk7CPlD/nvKx71tQTZh5xDOUeXM80HxPxj6r8j9VZI56zdvJ6KYbL/CqqvoNE+kh9TsrimKlID4Nr1pwnQhl/duscxyomKqvBKMqN7cYpzn8oVsohm6+uD5IR8bG9fSugsAcTWamAbJZqLCOdPu7fml7k1T2s8MJvcpx+yB9WbcGneUCm+omtIY6yeHuzpk=
 before_install:
 - echo -e "machine github.com\n  login $TOKEN" >> ~/.netrc
 - cat ~/.netrc
-- echo -e "[user]\n  name = atao60\n  email = email-blocked" >> ~/.gitconfig
+- echo -e "[user]\n  name = atao60\n  email = $GITHUB_USER_EMAIL" >> ~/.gitconfig
 - cat ~/.gitconfig
 after_success:
-# As long as Travis doesn't work with Maven 3.3.1+, profile maven-repo-update must be specified here 
 - mvn clean deploy -Dmaven.test.skip=true -Pmaven-repo-update
-    
